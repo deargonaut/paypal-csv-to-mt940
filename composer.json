@@ -1,0 +1,21 @@
+{
+    "name": "deargonaut/paypal-csv-to-mt940",
+    "description": "Parse PayPal CSV exports to the MT940 format. Convenient for a lot of accountancy software.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jason de Ridder",
+            "email": "mail@deargonauten.com"
+        }
+    ],
+    "autoload": {
+    	"psr-4": {
+    		"Deargonaut\\PaypalCsvToMt940\\": "src/"
+    	}
+    },
+
+    "require": {
+    	"php": "^5.6"
+    }
+}

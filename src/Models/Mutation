@@ -1,0 +1,8 @@
+<?php
+namespace Deargonaut\PaypalCsvToMt940\Models;
+
+class Mutation
+{
+    public $amount = 0.00,
+            $currency = 'EUR'
+}
