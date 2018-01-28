@@ -12,7 +12,7 @@ class Mutation
 
     public function getDate()
     {
-        return strftime('r', strtotime($this->date ?: time()));
+        return date('r', strtotime($this->date ?: time()));
     }
 
     public function getDescription()

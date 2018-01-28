@@ -73,12 +73,12 @@ class PaypalCsvToMt940
         {
             // TODO: Make 'currency' an option
             if($m[$f['currency']] != 'EUR') continue;
-            if($m[$f['status']] != $f['completed']) continue;
+//            if($m[$f['status']] != $f['completed']) continue;
 
             $mutation = new Mutation();
             $mutation->setAmount($m[$f['net']]);
             $mutation->date = (\DateTime::createFromFormat("d-m-Y H:i:s e", $m[$f['date']] . ' ' . $m[$f['time']] . ' ' . $m[$f['timezone']]))->format('Y-m-d H:i:s e');
-            $mutation->description = $m[$f['name']] . ' ' . $m[$f['type']] . ' ' . $m[$f['to_mail']] . ' ' . $m[$f['transaction_reference']] . ' ' . $m[$f['item_title']] . ' ' . $m[$f['object_reference']] . ' ' . $m[$f['invoice_number']] . ' ' . $m[$f['subject']];
+            $mutation->description = $m[$f['item_title']] . ' ' . $m[$f['name']] . ' ' . $m[$f['type']] .  ' ' . $m[$f['transaction_reference']] . ' ' . $m[$f['object_reference']] . ' ' . $m[$f['invoice_number']] . ' ' . $m[$f['subject']];
             $mutation->setBalance($m[$f['balance']]);
 
             $this->mutations[] = $mutation;

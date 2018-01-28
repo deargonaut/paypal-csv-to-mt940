@@ -156,7 +156,7 @@ EOF;
         $add        = (bool)($amount > 0);
         
         $mutation           = [];
-        $mutation["_61"]    = date('ymd', $time) . date('md', $time) . ($add ? 'C' : 'D') . $this->makeAmount($amount) . "N526NOREF";
+        $mutation["_61"]    = date('ymd', $time) . date('md', $time) . ($add ? 'C' : 'D') . abs($this->makeAmount($amount)) . "N526NOREF";
         $mutation["_86"]    = substr($description, 0, 386);
 
         $this->mutations[]  = $mutation;
