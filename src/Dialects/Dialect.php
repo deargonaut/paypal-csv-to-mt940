@@ -8,7 +8,7 @@ abstract class Dialect implements DialectInterface
     public $index = 00000;
     private $previousBalance = 0;
     private $calcStartBalance = 0;
-    public $startBalance;
+    public $startBalance = 0;
     public $balance = 0;
     public $mutations = [];
     public $currency = 'EUR';
@@ -90,7 +90,7 @@ EOF;
         if($index < 0 || $index > 99999)
             throw new \Exception("Index need to be between 0 - 9999");
 
-        $this->index = printf("%05d", $index);
+        $this->index = sprintf("%05d", $index);
 
         return $this;
     }
@@ -123,7 +123,7 @@ EOF;
         if(is_null($date)) $date = time();
         else $date = strtotime($date);
 
-       $this->startBalance = ($balance >= 0 ? "C" : "D") . date('ymd', $date) . $this->makeAmount($balance, $this->currency);
+       $this->startBalance = ($balance > 0 ? "C" : "D") . date('ymd', $date) . $this->makeAmount($balance, $this->currency);
        return $this;
     }
 
@@ -153,11 +153,11 @@ EOF;
     public function addMutation($date, $amount, $balance, $description)
     {
         $time       = strtotime($date);
-        $add        = (bool)($amount >= 0);
+        $add        = (bool)($amount > 0);
         
         $mutation           = [];
         $mutation["_61"]    = date('ymd', $time) . date('md', $time) . ($add ? 'C' : 'D') . $this->makeAmount($amount) . "N526NOREF";
-        $mutation["_86"]    = substring($description, 0, 386);
+        $mutation["_86"]    = substr($description, 0, 386);
 
         $this->mutations[]  = $mutation;
         $this->balance      = $balance;
@@ -168,10 +168,12 @@ EOF;
     private function parseMutations()
     {
         $return = "";
+        $first = true;
         foreach($this->mutations as $mutation)
         {
-            $return .= ":61:{$mutation['_61']}\n";
+            $return .= (!$first ? "\n" : '') . ":61:{$mutation['_61']}\n";
             $return .= implode("\n", str_split(":86:{$mutation['_86']}", 65));
+	        if($first) { $first = false; }
         }
 
         return $return;
@@ -183,17 +185,21 @@ EOF;
     public function generate()
     {
         $template = $this->template;
-        preg_match_all("/\{\{[a-z]*\}\}/", $template, $matches);
-        foreach($matches as $match)
+
+        preg_match_all("/\{\{([a-zA-Z]*)\}\}/", $template, $matches);
+
+        foreach($matches[1] as $match)
         {
             $result = '';
-            $func = 'parse' . ucfirst($match[1]);
+            $func = 'parse' . ucfirst($match);
             if(is_callable([$this, $func]))
                 $result = $this->{$func}();
-            elseif(isset($this->{$match[1]}))
-                $result = $this->{$match[1]};
-            
-            $template = str_replace("{{" . $match[1] . "}}", $result, $template);
+
+            else if(isset($this->$match))
+                $result = $this->$match;
+
+
+            $template = preg_replace("/\{\{" . $match . "\}\}/m", $result, $template);
         }
 
         return $template;

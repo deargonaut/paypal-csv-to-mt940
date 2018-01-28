@@ -24,8 +24,8 @@ class PaypalCsvToMt940
 
     public function __construct($csv, $language = 'NL', $options = [])
     {
+	    $this->setOptions($options);
         $this->loadFile($csv);
-        $this->setOptions($options);
     }
 
 
@@ -45,16 +45,21 @@ class PaypalCsvToMt940
 
         $this->csv_file_location = $csv;
 
-        $csv_array = [];
+        // Add a trimming newline... Don't know why. TODO
+        file_put_contents($this->csv_file_location, "\n" .  trim(file_get_contents($this->csv_file_location)));
         $csv_array = array_map('str_getcsv', file($this->csv_file_location));
+
+        array_shift($csv_array);
         array_walk($csv_array, function(&$a) use ($csv_array) {
             $a = array_combine($csv_array[0], $a);
         });
         array_shift($csv_array); # remove column header
 
         $this->csv_array = $csv_array;
+        $this->parse();
 
     }
+
 
     private function parse()
     {
@@ -63,7 +68,7 @@ class PaypalCsvToMt940
             $f = $f['nl'];
         else
             $f = $f[$this->options['language']];
-        
+
         foreach($this->csv_array as $m)
         {
             // TODO: Make 'currency' an option
@@ -72,7 +77,7 @@ class PaypalCsvToMt940
 
             $mutation = new Mutation();
             $mutation->setAmount($m[$f['net']]);
-            $mutation->date = (DateTime::createFromFormat("d-m-Y H:i:s e", $m[$f['date']] . ' ' . $m[$f['time']] . ' ' . $m[$f['timezone']]))->format('Y-m-d H:i:s e');
+            $mutation->date = (\DateTime::createFromFormat("d-m-Y H:i:s e", $m[$f['date']] . ' ' . $m[$f['time']] . ' ' . $m[$f['timezone']]))->format('Y-m-d H:i:s e');
             $mutation->description = $m[$f['name']] . ' ' . $m[$f['type']] . ' ' . $m[$f['to_mail']] . ' ' . $m[$f['transaction_reference']] . ' ' . $m[$f['item_title']] . ' ' . $m[$f['object_reference']] . ' ' . $m[$f['invoice_number']] . ' ' . $m[$f['subject']];
             $mutation->setBalance($m[$f['balance']]);
 
@@ -114,11 +119,11 @@ class PaypalCsvToMt940
         }
     }
 
-    public function save($options = [])
+    public function save($outputAsWell = false, $options = [])
     {
         $this->setOptions($options);
 
-        if(file_exist($this->options['location'] . $this->options['filename']) && !$this->options['overwrite'])
+        if(file_exists($this->options['location'] . $this->options['filename']) && !$this->options['overwrite'])
             throw new \Exception('File exists already');
 
         foreach($this->mutations as $m)
@@ -126,8 +131,13 @@ class PaypalCsvToMt940
             $this->parser->addMutation($m->getDate(), $m->amount, $m->balance, $m->getDescription());
         }
 
-        \file_put_contents($this->options['location'] . $this->options['filename'], $this->parser->generate());
-        return true;
+        $mt940 = $this->parser->generate();
+        \file_put_contents($this->options['location'] . $this->options['filename'], $mt940);
+
+        if($outputAsWell)
+            return $mt940;
+        else
+        	return true;
         
     }
 }

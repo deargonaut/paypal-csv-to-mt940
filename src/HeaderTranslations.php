@@ -2,8 +2,8 @@
 
 return [
     'nl' => [
-        "date"              => "Datum",
-        "time"              => "time",
+        "date"              => 'Datum',
+        "time"              => 'Tijd',
         "timezone"          => "Tijdzone",
         "name"              => 'Naam',
         'type'              => 'Type',
