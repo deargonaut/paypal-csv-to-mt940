@@ -24,7 +24,7 @@ class PaypalCsvToMt940
 
     public function __construct($csv, $language = 'NL', $options = [])
     {
-	    $this->setOptions($options);
+	$this->setOptions($options);
         $this->loadFile($csv);
     }
 
@@ -115,7 +115,7 @@ class PaypalCsvToMt940
         }
         if(isset($options['language']))
         {
-            $this->options['language'] = substr(strtolower($options['location']), 0, 2);
+            $this->options['language'] = substr(strtolower($options['language']), 0, 2);
         }
     }
 
