@@ -54,7 +54,6 @@ class PaypalCsvToMt940
             explode("\n", $text)
         );
 
-        array_shift($csv_array);
         array_walk($csv_array, function(&$a) use ($csv_array) {
             $a = array_combine($csv_array[0], $a);
         });
