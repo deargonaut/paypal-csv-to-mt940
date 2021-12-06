@@ -24,7 +24,7 @@ class PaypalCsvToMt940
 
     public function __construct($csv, $language = 'NL', $options = [])
     {
-	    $this->setOptions($options);
+	$this->setOptions($options);
         $this->loadFile($csv);
     }
 
@@ -45,11 +45,15 @@ class PaypalCsvToMt940
 
         $this->csv_file_location = $csv;
 
-        // Add a trimming newline... Don't know why. TODO
-        file_put_contents($this->csv_file_location, "\n" .  trim(file_get_contents($this->csv_file_location)));
-        $csv_array = array_map('str_getcsv', file($this->csv_file_location));
+        // Remove the UTF-8 BOM flag in order to avoid wrong processing of
+	// data. It seems, that str_getcsv is not able to UTF-8 BOM.
+	$bom = pack('H*','EFBBBF');
+        $text = preg_replace("/^$bom/", '', file_get_contents($this->csv_file_location));
+        $csv_array = array_map(
+            'str_getcsv', 
+            explode("\n", $text)
+        );
 
-        array_shift($csv_array);
         array_walk($csv_array, function(&$a) use ($csv_array) {
             $a = array_combine($csv_array[0], $a);
         });
@@ -115,7 +119,7 @@ class PaypalCsvToMt940
         }
         if(isset($options['language']))
         {
-            $this->options['language'] = substr(strtolower($options['location']), 0, 2);
+            $this->options['language'] = substr(strtolower($options['language']), 0, 2);
         }
     }
 
