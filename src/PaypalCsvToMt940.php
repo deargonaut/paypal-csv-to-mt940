@@ -92,7 +92,7 @@ class PaypalCsvToMt940
             if(!is_string($options['filename']))
                 throw new \Exception("Filename needs to be a string.");
             
-            $fn = explode(DIRECTORY_SEPERATOR, $options['filename']);
+            $fn = explode(DIRECTORY_SEPARATOR, $options['filename']);
             $this->options['filename'] = array_pop($fn);
         }
 
@@ -115,7 +115,7 @@ class PaypalCsvToMt940
         }
         if(isset($options['language']))
         {
-            $this->options['language'] = substr(strtolower($options['location']), 0, 2);
+            $this->options['language'] = substr(strtolower($options['language']), 0, 2);
         }
     }
 
